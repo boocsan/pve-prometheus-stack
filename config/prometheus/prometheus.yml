@@ -1,0 +1,87 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: prometheus-stack
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - alert_rules.yml
+
+scrape_configs:
+  - job_name: self
+    static_configs:
+      - targets: [node_exporter:9100]
+  - job_name: pushgateway
+    static_configs:
+      - targets: [pushgateway:9091]
+  - job_name: blackbox_exporter
+    static_configs:
+      - targets: [blackbox_exporter:9115]
+  # - job_name: blackbox_exporter_http
+  #   scrape_interval: 30s
+  #   scrape_timeout: 20s
+  #   metrics_path: /probe
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - targets:
+  #         - https://www.google.co.jp/
+  #         - https://example.com/
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: blackbox_exporter:9115
+  # - job_name: blackbox_exporter_icmp
+  #   metrics_path: /probe
+  #   params:
+  #     module: [icmp]
+  #   static_configs:
+  #     - targets:
+  #         - example.com
+  #         - dns.google
+  #         - one.one.one.one
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: blackbox_exporter:9115
+  - job_name: snmp_exporter
+    scrape_interval: 1s
+    scrape_timeout: 1s
+    static_configs:
+      - targets: [192.168.10.1]
+    metrics_path: /snmp
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp_exporter:9116
+  - job_name: snmp_exporter_nec_ix
+    scrape_interval: 1s
+    scrape_timeout: 1s
+    static_configs:
+      - targets: [192.168.10.1]
+    metrics_path: /snmp
+    params:
+      module:
+        - nec_ix
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp_exporter:9116
